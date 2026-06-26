@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../controllers/favorite_controller.dart';
 import '../../routes/app_routes.dart';
 import '../../widgets/movie_card.dart';
+import '../controllers/controllers.dart';
 
 class FavoritesPage extends StatelessWidget {
   const FavoritesPage({super.key});

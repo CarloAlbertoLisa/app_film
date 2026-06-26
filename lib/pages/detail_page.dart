@@ -2,8 +2,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../controllers/favorite_controller.dart';
 import '../../models/movie_model.dart';
+import '../controllers/controllers.dart';
 
 class DetailPage extends StatelessWidget {
   const DetailPage({super.key});
