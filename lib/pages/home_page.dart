@@ -19,6 +19,7 @@ class _HomePageState extends State<HomePage> {
     final favoriteController = context.watch<FavoriteController>();
     final colors = Theme.of(context).colorScheme;
     final size = MediaQuery.of(context).size;
+    final themeController = context.watch<ThemeController>();
 
     return Scaffold(
       body: SafeArea(
@@ -41,6 +42,16 @@ class _HomePageState extends State<HomePage> {
                   IconButton(
                     icon: const Icon(Icons.refresh_rounded),
                     onPressed: movieController.refresh,
+                  ),
+                  IconButton(
+                    icon: Icon(
+                      themeController.isDark
+                          ? Icons.dark_mode_rounded
+                          : Icons.light_mode_rounded,
+                    ),
+                    onPressed: () {
+                      context.read<ThemeController>().toggleTheme();
+                    },
                   ),
                   SizedBox(width: size.height * 0.02),
                 ],
