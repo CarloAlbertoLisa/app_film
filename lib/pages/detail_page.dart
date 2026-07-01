@@ -6,14 +6,38 @@ import '../../models/movie_model.dart';
 import '../controllers/controllers.dart';
 
 class DetailPage extends StatelessWidget {
-  const DetailPage({super.key});
+  final int? movieId;
+
+  const DetailPage({
+    super.key,
+    required this.movieId,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final movie = ModalRoute.of(context)!.settings.arguments as Movie;
-    final favoriteController = context.watch<FavoriteController>();
-    final isFavorite = favoriteController.isFavorite(movie);
-    final colors = Theme.of(context).colorScheme;
+    final movieController =
+    context.watch<MovieController>();
+
+    final movie = movieController.movies
+        .where((e) => e.id == movieId)
+        .firstOrNull;
+
+    if (movie == null) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    final favoriteController =
+    context.watch<FavoriteController>();
+
+    final isFavorite =
+    favoriteController.isFavorite(movie);
+    final colors = Theme
+        .of(context)
+        .colorScheme;
 
     return Scaffold(
       body: CustomScrollView(
@@ -25,7 +49,8 @@ class DetailPage extends StatelessWidget {
               IconButton(
                 onPressed: () => favoriteController.toggle(movie),
                 icon: Icon(
-                  isFavorite ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                  isFavorite ? Icons.favorite_rounded : Icons
+                      .favorite_border_rounded,
                 ),
               ),
             ],
@@ -88,7 +113,9 @@ class DetailPage extends StatelessWidget {
                           ),
                           _InfoChip(
                             icon: Icons.calendar_month_rounded,
-                            label: movie.releaseDate.isEmpty ? 'Data non disponibile' : movie.releaseDate,
+                            label: movie.releaseDate.isEmpty
+                                ? 'Data non disponibile'
+                                : movie.releaseDate,
                           ),
                           _InfoChip(
                             icon: Icons.local_movies_rounded,
@@ -130,10 +157,13 @@ class DetailPage extends StatelessWidget {
                       FilledButton.icon(
                         onPressed: () => favoriteController.toggle(movie),
                         icon: Icon(
-                          isFavorite ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                          isFavorite ? Icons.favorite_rounded : Icons
+                              .favorite_border_rounded,
                         ),
                         label: Text(
-                          isFavorite ? 'Rimuovi dai preferiti' : 'Aggiungi ai preferiti',
+                          isFavorite
+                              ? 'Rimuovi dai preferiti'
+                              : 'Aggiungi ai preferiti',
                         ),
                       ),
                     ],

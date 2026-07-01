@@ -1,52 +1,55 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/movie_model.dart';
 
 class FavoriteController extends ChangeNotifier {
-  static const _storageKey = 'favorite_movies';
+  static const _storageKey = 'favorites';
 
-  final List<Movie> _favorites = [];
-  bool _loaded = false;
+  final Set<int> _favorites = {};
 
-  List<Movie> get favorites => List.unmodifiable(_favorites);
+  Set<int> get favorites => _favorites;
 
   Future<void> loadFavorites() async {
-    if (_loaded) return;
-
     final prefs = await SharedPreferences.getInstance();
-    final raw = prefs.getStringList(_storageKey) ?? [];
 
     _favorites
       ..clear()
       ..addAll(
-        raw.map((item) => Movie.fromJson(jsonDecode(item) as Map<String, dynamic>)),
+        prefs
+            .getStringList(_storageKey)
+            ?.map(int.parse)
+            .toList() ??
+            [],
       );
 
-    _loaded = true;
     notifyListeners();
   }
 
   bool isFavorite(Movie movie) {
-    return _favorites.any((item) => item.id == movie.id);
+    return _favorites.contains(movie.id);
   }
 
   Future<void> toggle(Movie movie) async {
     final prefs = await SharedPreferences.getInstance();
 
-    if (isFavorite(movie)) {
-      _favorites.removeWhere((item) => item.id == movie.id);
+    if (_favorites.contains(movie.id)) {
+      _favorites.remove(movie.id);
     } else {
-      _favorites.add(movie);
+      _favorites.add(movie.id);
     }
 
     await prefs.setStringList(
       _storageKey,
-      _favorites.map((m) => jsonEncode(m.toJson())).toList(),
+      _favorites.map((e) => e.toString()).toList(),
     );
 
     notifyListeners();
+  }
+
+  List<Movie> getFavoriteMovies(List<Movie> movies) {
+    return movies
+        .where((movie) => _favorites.contains(movie.id))
+        .toList();
   }
 }

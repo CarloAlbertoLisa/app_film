@@ -11,13 +11,19 @@ class FavoritesPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final favorites = context.watch<FavoriteController>();
+    final movieController = context.watch<MovieController>();
+
+    final favoriteMovies = favorites.getFavoriteMovies(
+      movieController.movies,
+    );
+
     final colors = Theme.of(context).colorScheme;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Preferiti'),
       ),
-      body: favorites.favorites.isEmpty
+      body: favoriteMovies.isEmpty
           ? Center(
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -67,7 +73,7 @@ class FavoritesPage extends StatelessWidget {
       )
           : GridView.builder(
         padding: const EdgeInsets.all(16),
-        itemCount: favorites.favorites.length,
+        itemCount: favoriteMovies.length,
         gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
           maxCrossAxisExtent: 240,
           mainAxisSpacing: 16,
@@ -75,16 +81,14 @@ class FavoritesPage extends StatelessWidget {
           childAspectRatio: 0.62,
         ),
         itemBuilder: (context, index) {
-          final movie = favorites.favorites[index];
-
+          final movie = favoriteMovies[index];
           return MovieCard(
             movie: movie,
             isFavorite: true,
             onTap: () {
               Navigator.pushNamed(
                 context,
-                AppRoutes.detail,
-                arguments: movie,
+                '/detail/${movie.id}',
               );
             },
             onFavoriteTap: () => favorites.toggle(movie),

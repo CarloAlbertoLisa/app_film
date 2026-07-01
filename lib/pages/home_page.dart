@@ -164,8 +164,7 @@ class _HomePageState extends State<HomePage> {
             onTap: () {
               Navigator.pushNamed(
                 context,
-                AppRoutes.detail,
-                arguments: movie,
+                '/detail/${movie.id}',
               );
             },
             onFavoriteTap: () => favoriteController.toggle(movie),
