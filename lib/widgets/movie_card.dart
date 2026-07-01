@@ -57,6 +57,11 @@ class _MovieCardState extends State<MovieCard> {
             borderRadius: BorderRadius.circular(22),
             child: InkWell(
               onTap: widget.onTap,
+              borderRadius: BorderRadius.circular(22),
+              splashColor: Colors.transparent,
+              highlightColor: Colors.transparent,
+              hoverColor: Colors.transparent,
+              focusColor: Colors.transparent,
               child: Column(
                 children: [
                   Expanded(
