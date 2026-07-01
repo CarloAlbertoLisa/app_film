@@ -18,22 +18,26 @@ class Movie {
   factory Movie.fromJson(Map<String, dynamic> json) {
     return Movie(
       id: (json['id'] ?? 0) as int,
-      title: (json['title'] ?? json['name'] ?? 'Titolo non disponibile').toString(),
-      overview: (json['overview'] ?? 'Nessuna descrizione disponibile').toString(),
+      title: (json['title'] ?? json['name'] ?? 'Titolo non disponibile')
+          .toString(),
+      overview: (json['overview'] ?? 'Nessuna descrizione disponibile')
+          .toString(),
       posterPath: (json['poster_path'] ?? '').toString(),
       rating: (json['vote_average'] ?? 0).toDouble(),
-      releaseDate: (json['release_date'] ?? json['first_air_date'] ?? '').toString(),
+      releaseDate: (json['release_date'] ?? json['first_air_date'] ?? '')
+          .toString(),
     );
   }
 
-  Map<String, dynamic> toJson() => {
-    'id': id,
-    'title': title,
-    'overview': overview,
-    'poster_path': posterPath,
-    'vote_average': rating,
-    'release_date': releaseDate,
-  };
+  Map<String, dynamic> toJson() =>
+      {
+        'id': id,
+        'title': title,
+        'overview': overview,
+        'poster_path': posterPath,
+        'vote_average': rating,
+        'release_date': releaseDate,
+      };
 
   String get year {
     if (releaseDate.length < 4) return '—';

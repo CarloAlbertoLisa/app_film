@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../models/movie_model.dart';
 
-class MovieCard extends StatelessWidget {
+class MovieCard extends StatefulWidget {
   final Movie movie;
   final VoidCallback onTap;
   final VoidCallback onFavoriteTap;
@@ -18,112 +18,165 @@ class MovieCard extends StatelessWidget {
   });
 
   @override
+  State<MovieCard> createState() => _MovieCardState();
+}
+
+class _MovieCardState extends State<MovieCard> {
+  bool _hover = false;
+
+  @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final size = MediaQuery.of(context).size;
 
-    return Material(
-      color: colors.surfaceVariant.withOpacity(0.22),
-      borderRadius: BorderRadius.circular(24),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(24),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(24),
-          child: Column(
-            children: [
-              Expanded(
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    if (movie.posterUrl.isNotEmpty)
-                      CachedNetworkImage(
-                        imageUrl: movie.posterUrl,
-                        fit: BoxFit.cover,
-                        placeholder: (_, __) => Container(
-                          color: colors.surfaceVariant.withOpacity(0.35),
-                          child: const Center(
-                            child: CircularProgressIndicator(),
-                          ),
-                        ),
-                        errorWidget: (_, __, ___) => Container(
-                          color: colors.surfaceVariant.withOpacity(0.35),
-                          child: const Icon(Icons.movie_outlined, size: 48),
-                        ),
-                      )
-                    else
-                      Container(
-                        color: colors.surfaceVariant.withOpacity(0.35),
-                        child: const Icon(Icons.movie_outlined, size: 48),
-                      ),
-                    Positioned(
-                      top: 12,
-                      right: 12,
-                      child: GestureDetector(
-                        onTap: onFavoriteTap,
-                        child: Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.45),
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            isFavorite ? Icons.favorite : Icons.favorite_border,
-                            color: Colors.white,
-                            size: 18,
-                          ),
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
-                      child: Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [
-                              Colors.transparent,
-                              Colors.black.withOpacity(0.80),
-                            ],
-                          ),
-                        ),
-                        child: Text(
-                          movie.title,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 15,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(14, 10, 14, 14),
-                child: Row(
-                  children: [
-                    Icon(Icons.star_rounded, size: 18, color: colors.primary),
-                    const SizedBox(width: 4),
-                    Text(movie.rating.toStringAsFixed(1)),
-                    const Spacer(),
-                    Text(
-                      movie.year,
-                      style: TextStyle(color: colors.onSurfaceVariant),
-                    ),
-                  ],
-                ),
+    return MouseRegion(
+      onEnter: (_) => setState(() => _hover = true),
+      onExit: (_) => setState(() => _hover = false),
+      child: AnimatedScale(
+        duration: const Duration(milliseconds: 180),
+        scale: _hover ? 1.04 : 1.0,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(22),
+            color: colors.surface,
+            border: Border.all(
+              color: _hover
+                  ? colors.primary.withOpacity(0.5)
+                  : colors.outlineVariant.withOpacity(0.2),
+              width: 1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(_hover ? 0.25 : 0.12),
+                blurRadius: _hover ? 18 : 10,
+                offset: const Offset(0, 6),
               ),
             ],
           ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(22),
+            child: InkWell(
+              onTap: widget.onTap,
+              child: Column(
+                children: [
+                  Expanded(
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        _poster(colors),
+                        AnimatedContainer(
+                          duration: const Duration(milliseconds: 180),
+                          color: _hover
+                              ? Colors.black.withOpacity(0.15)
+                              : Colors.transparent,
+                        ),
+
+                        Positioned(
+                          top: 10,
+                          right: 10,
+                          child: GestureDetector(
+                            onTap: widget.onFavoriteTap,
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 180),
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: Colors.black.withOpacity(
+                                  _hover ? 0.6 : 0.4,
+                                ),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                widget.isFavorite
+                                    ? Icons.favorite_rounded
+                                    : Icons.favorite_border_rounded,
+                                color: Colors.white,
+                                size: 18,
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        Positioned(
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          child: Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [
+                                  Colors.transparent,
+                                  Colors.black.withOpacity(0.85),
+                                ],
+                              ),
+                            ),
+                            child: Text(
+                              widget.movie.title,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 10,
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.star_rounded,
+                            size: 16, color: colors.primary),
+                        const SizedBox(width: 4),
+                        Text(widget.movie.rating.toStringAsFixed(1)),
+                        const Spacer(),
+                        Text(
+                          widget.movie.year,
+                          style: TextStyle(
+                            color: colors.onSurfaceVariant,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
+      ),
+    );
+  }
+
+  Widget _poster(ColorScheme colors) {
+    if (widget.movie.posterUrl.isEmpty) {
+      return Container(
+        color: colors.surfaceContainerHighest.withOpacity(0.4),
+        child: const Icon(Icons.movie_outlined, size: 40),
+      );
+    }
+
+    return CachedNetworkImage(
+      imageUrl: widget.movie.posterUrl,
+      fit: BoxFit.cover,
+      placeholder: (_, __) => Container(
+        color: colors.surfaceContainerHighest.withOpacity(0.4),
+        child: const Center(child: CircularProgressIndicator()),
+      ),
+      errorWidget: (_, __, ___) => Container(
+        color: colors.surfaceContainerHighest.withOpacity(0.4),
+        child: const Icon(Icons.broken_image_outlined),
       ),
     );
   }

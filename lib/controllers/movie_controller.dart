@@ -14,7 +14,9 @@ class MovieController extends ChangeNotifier {
   String _searchQuery = '';
 
   bool get isLoading => _isLoading;
+
   String? get errorMessage => _errorMessage;
+
   List<Movie> get movies => List.unmodifiable(_filteredMovies);
 
   Future<void> loadMovies() async {

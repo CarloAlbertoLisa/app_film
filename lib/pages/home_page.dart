@@ -17,10 +17,8 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     final movieController = context.watch<MovieController>();
     final favoriteController = context.watch<FavoriteController>();
-    final colors = Theme.of(context).colorScheme;
-    final size = MediaQuery.of(context).size;
     final themeController = context.watch<ThemeController>();
-
+    final colors = Theme.of(context).colorScheme;
     return Scaffold(
       body: SafeArea(
         child: RefreshIndicator(
@@ -31,7 +29,12 @@ class _HomePageState extends State<HomePage> {
               SliverAppBar(
                 pinned: true,
                 floating: true,
-                title: const Text('Movie Explorer'),
+                elevation: 0,
+                backgroundColor: colors.surface,
+                title: const Text(
+                  'Movie Explorer',
+                  style: TextStyle(fontWeight: FontWeight.w700),
+                ),
                 actions: [
                   IconButton(
                     icon: const Icon(Icons.favorite_rounded),
@@ -44,26 +47,37 @@ class _HomePageState extends State<HomePage> {
                     onPressed: movieController.refresh,
                   ),
                   IconButton(
-                    icon: Icon(
-                      themeController.isDark
-                          ? Icons.dark_mode_rounded
-                          : Icons.light_mode_rounded,
+                    icon: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 250),
+                      child: Icon(
+                        themeController.isDark
+                            ? Icons.dark_mode_rounded
+                            : Icons.light_mode_rounded,
+                        key: ValueKey(themeController.isDark),
+                      ),
                     ),
-                    onPressed: () {
-                      context.read<ThemeController>().toggleTheme();
-                    },
+                    onPressed: themeController.toggleTheme,
                   ),
-                  SizedBox(width: size.height * 0.02),
                 ],
                 bottom: PreferredSize(
-                  preferredSize: const Size.fromHeight(78),
+                  preferredSize: const Size.fromHeight(72),
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
-                    child: TextField(
-                      onChanged: movieController.setSearchQuery,
-                      decoration: const InputDecoration(
-                        hintText: 'Cerca un film...',
-                        prefixIcon: Icon(Icons.search_rounded),
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: colors.surfaceVariant.withOpacity(0.3),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: TextField(
+                        onChanged: movieController.setSearchQuery,
+                        decoration: InputDecoration(
+                          hintText: 'Cerca film, attori, generi...',
+                          prefixIcon: const Icon(Icons.search_rounded),
+                          border: InputBorder.none,
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 14,
+                          ),
+                        ),
                       ),
                     ),
                   ),
@@ -71,25 +85,24 @@ class _HomePageState extends State<HomePage> {
               ),
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
                   child: Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(18),
+                    padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: colors.surfaceVariant.withOpacity(0.22),
-                      borderRadius: BorderRadius.circular(24),
+                      borderRadius: BorderRadius.circular(20),
+                      color: colors.primary.withOpacity(0.08),
                     ),
                     child: Row(
                       children: [
                         Icon(Icons.local_movies_rounded, color: colors.primary),
-                        const SizedBox(width: 12),
+                        const SizedBox(width: 10),
                         Expanded(
                           child: Text(
                             movieController.isLoading
-                                ? 'Caricamento film in corso...'
-                                : '${movieController.movies.length} film disponibili',
+                                ? 'Caricamento...'
+                                : '${movieController.movies
+                                .length} film disponibili',
                             style: const TextStyle(
-                              fontSize: 15,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -99,7 +112,7 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
               ),
-              const SliverToBoxAdapter(child: SizedBox(height: 12)),
+              const SliverToBoxAdapter(child: SizedBox(height: 8)),
               SliverPadding(
                 padding: const EdgeInsets.all(16),
                 sliver: _buildBody(movieController, favoriteController),
@@ -111,10 +124,8 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildBody(
-      MovieController movieController,
-      FavoriteController favoriteController,
-      ) {
+  Widget _buildBody(MovieController movieController,
+      FavoriteController favoriteController,) {
     if (movieController.isLoading) {
       return const SliverFillRemaining(
         child: Center(child: CircularProgressIndicator()),
@@ -127,13 +138,10 @@ class _HomePageState extends State<HomePage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.wifi_off_rounded, size: 60),
-              const SizedBox(height: 12),
-              Text(
-                movieController.errorMessage!,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 12),
+              const Icon(Icons.wifi_off_rounded, size: 56),
+              const SizedBox(height: 10),
+              Text(movieController.errorMessage!),
+              const SizedBox(height: 10),
               FilledButton(
                 onPressed: movieController.refresh,
                 child: const Text('Riprova'),
@@ -146,9 +154,7 @@ class _HomePageState extends State<HomePage> {
 
     if (movieController.movies.isEmpty) {
       return const SliverFillRemaining(
-        child: Center(
-          child: Text('Nessun film trovato'),
-        ),
+        child: Center(child: Text('Nessun film trovato')),
       );
     }
 
@@ -173,10 +179,10 @@ class _HomePageState extends State<HomePage> {
         childCount: movieController.movies.length,
       ),
       gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-        maxCrossAxisExtent: 240,
-        mainAxisSpacing: 16,
-        crossAxisSpacing: 16,
-        childAspectRatio: 0.62,
+        maxCrossAxisExtent: 220,
+        mainAxisSpacing: 14,
+        crossAxisSpacing: 14,
+        childAspectRatio: 0.58,
       ),
     );
   }

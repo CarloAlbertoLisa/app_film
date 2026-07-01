@@ -2,7 +2,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../models/movie_model.dart';
 import '../controllers/controllers.dart';
 
 class DetailPage extends StatelessWidget {
@@ -15,8 +14,11 @@ class DetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final movieController =
-    context.watch<MovieController>();
+    final movieController = context.watch<MovieController>();
+    final favoriteController = context.watch<FavoriteController>();
+    final colors = Theme
+        .of(context)
+        .colorScheme;
 
     final movie = movieController.movies
         .where((e) => e.id == movieId)
@@ -24,20 +26,11 @@ class DetailPage extends StatelessWidget {
 
     if (movie == null) {
       return const Scaffold(
-        body: Center(
-          child: CircularProgressIndicator(),
-        ),
+        body: Center(child: CircularProgressIndicator()),
       );
     }
 
-    final favoriteController =
-    context.watch<FavoriteController>();
-
-    final isFavorite =
-    favoriteController.isFavorite(movie);
-    final colors = Theme
-        .of(context)
-        .colorScheme;
+    final isFavorite = favoriteController.isFavorite(movie);
 
     return Scaffold(
       body: CustomScrollView(
@@ -45,12 +38,18 @@ class DetailPage extends StatelessWidget {
           SliverAppBar(
             pinned: true,
             expandedHeight: 420,
+            backgroundColor: colors.surface,
             actions: [
               IconButton(
                 onPressed: () => favoriteController.toggle(movie),
-                icon: Icon(
-                  isFavorite ? Icons.favorite_rounded : Icons
-                      .favorite_border_rounded,
+                icon: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 200),
+                  child: Icon(
+                    isFavorite
+                        ? Icons.favorite_rounded
+                        : Icons.favorite_border_rounded,
+                    key: ValueKey(isFavorite),
+                  ),
                 ),
               ),
             ],
@@ -58,27 +57,29 @@ class DetailPage extends StatelessWidget {
               background: Stack(
                 fit: StackFit.expand,
                 children: [
-                  if (movie.posterUrl.isNotEmpty)
-                    CachedNetworkImage(
-                      imageUrl: movie.posterUrl,
-                      fit: BoxFit.cover,
-                    )
-                  else
-                    Container(
-                      color: colors.surfaceVariant,
-                      child: const Center(
-                        child: Icon(Icons.movie_outlined, size: 72),
-                      ),
-                    ),
+                  _poster(movie.posterUrl, colors),
                   Container(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
                         colors: [
-                          Colors.black.withOpacity(0.08),
-                          Colors.black.withOpacity(0.78),
+                          Colors.black.withOpacity(0.2),
+                          Colors.black.withOpacity(0.9),
                         ],
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    left: 20,
+                    right: 20,
+                    bottom: 30,
+                    child: Text(
+                      movie.title,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 28,
+                        fontWeight: FontWeight.w800,
                       ),
                     ),
                   ),
@@ -95,74 +96,32 @@ class DetailPage extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        movie.title,
-                        style: const TextStyle(
-                          fontSize: 30,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Wrap(
-                        spacing: 10,
-                        runSpacing: 10,
-                        children: [
-                          _InfoChip(
-                            icon: Icons.star_rounded,
-                            label: movie.rating.toStringAsFixed(1),
+                      _InfoRow(movie: movie),
+                      const SizedBox(height: 18),
+                      _SectionCard(
+                        colors: colors,
+                        title: 'Descrizione',
+                        child: Text(
+                          movie.overview,
+                          style: TextStyle(
+                            height: 1.5,
+                            color: colors.onSurfaceVariant,
+                            fontSize: 15.5,
                           ),
-                          _InfoChip(
-                            icon: Icons.calendar_month_rounded,
-                            label: movie.releaseDate.isEmpty
-                                ? 'Data non disponibile'
-                                : movie.releaseDate,
-                          ),
-                          _InfoChip(
-                            icon: Icons.local_movies_rounded,
-                            label: movie.year,
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 20),
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(18),
-                        decoration: BoxDecoration(
-                          color: colors.surfaceVariant.withOpacity(0.22),
-                          borderRadius: BorderRadius.circular(24),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Descrizione',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-                            Text(
-                              movie.overview,
-                              style: TextStyle(
-                                fontSize: 16,
-                                height: 1.55,
-                                color: colors.onSurfaceVariant,
-                              ),
-                            ),
-                          ],
                         ),
                       ),
                       const SizedBox(height: 20),
                       FilledButton.icon(
-                        onPressed: () => favoriteController.toggle(movie),
+                        onPressed: () =>
+                            favoriteController.toggle(movie),
                         icon: Icon(
-                          isFavorite ? Icons.favorite_rounded : Icons
-                              .favorite_border_rounded,
+                          isFavorite
+                              ? Icons.favorite_rounded
+                              : Icons.favorite_border_rounded,
                         ),
                         label: Text(
                           isFavorite
-                              ? 'Rimuovi dai preferiti'
+                              ? 'Rimosso dai preferiti'
                               : 'Aggiungi ai preferiti',
                         ),
                       ),
@@ -176,22 +135,133 @@ class DetailPage extends StatelessWidget {
       ),
     );
   }
+
+  Widget _poster(String url, ColorScheme colors) {
+    if (url.isEmpty) {
+      return Container(
+        color: colors.surfaceContainerHighest,
+        child: const Icon(Icons.movie_outlined, size: 80),
+      );
+    }
+
+    return CachedNetworkImage(
+      imageUrl: url,
+      fit: BoxFit.cover,
+    );
+  }
 }
 
-class _InfoChip extends StatelessWidget {
-  final IconData icon;
-  final String label;
+class _InfoRow extends StatelessWidget {
+  final dynamic movie;
 
-  const _InfoChip({
+  const _InfoRow({required this.movie});
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme
+        .of(context)
+        .colorScheme;
+
+    return Wrap(
+      spacing: 10,
+      runSpacing: 10,
+      children: [
+        _Chip(
+          icon: Icons.star_rounded,
+          text: movie.rating.toStringAsFixed(1),
+          color: colors.primary,
+        ),
+        _Chip(
+          icon: Icons.calendar_month_rounded,
+          text: movie.releaseDate.isEmpty
+              ? 'N/D'
+              : movie.releaseDate,
+          color: colors.secondary,
+        ),
+        _Chip(
+          icon: Icons.local_movies_rounded,
+          text: movie.year,
+          color: colors.tertiary,
+        ),
+      ],
+    );
+  }
+}
+
+class _Chip extends StatelessWidget {
+  final IconData icon;
+  final String text;
+  final Color color;
+
+  const _Chip({
     required this.icon,
-    required this.label,
+    required this.text,
+    required this.color,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Chip(
-      avatar: Icon(icon, size: 18),
-      label: Text(label),
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 12,
+        vertical: 8,
+      ),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: color.withOpacity(0.25),
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 18, color: color),
+          const SizedBox(width: 6),
+          Text(text),
+        ],
+      ),
+    );
+  }
+}
+
+class _SectionCard extends StatelessWidget {
+  final String title;
+  final Widget child;
+  final ColorScheme colors;
+
+  const _SectionCard({
+    required this.title,
+    required this.child,
+    required this.colors,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: colors.surfaceContainerHighest.withOpacity(0.3),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(
+          color: colors.outlineVariant.withOpacity(0.2),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 10),
+          child,
+        ],
+      ),
     );
   }
 }
